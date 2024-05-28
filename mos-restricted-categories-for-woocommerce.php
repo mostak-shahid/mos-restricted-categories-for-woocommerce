@@ -102,9 +102,9 @@ function mos_restricted_categories_for_woocommerce_add_new_meta_field() {
 				
 				<label class="mos-cat-visibility-option"><input type="radio" name="mos_product_cat_visibility" id="mos_protected_visibility_pass" value="pass_protected"> Protected by Password </label>	
 				
-				<label class="mos-cat-visibility-option"><input type="radio" name="mos_product_cat_visibility" id="mos_protected_visibility_user_roles" value="user_role_protected"> Password Protected by User roles</label>	
+				<label class="mos-cat-visibility-option"><input type="radio" name="mos_product_cat_visibility" id="mos_protected_visibility_user_roles" value="user_role_protected">Protected by User roles</label>	
 
-				<label class="mos-cat-visibility-option"><input type="radio" name="mos_product_cat_visibility" id="mos_protected_visibility_users" value="user_protected"> Password Protected by User</label>
+				<label class="mos-cat-visibility-option"><input type="radio" name="mos_product_cat_visibility" id="mos_protected_visibility_users" value="user_protected">Protected by User</label>
 				<div class="mos-cat-protection-type mos-cat-protection-type-password">
 					<input class="mos-cat-password-field mos_product_cat_password" name="mos_product_cat_password" id="mos_product_cat_password" type="text" placeholder="Enter password…" value="">
 				</div>				
@@ -153,9 +153,9 @@ function mos_restricted_categories_for_woocommerce_edit_meta_field($term) {
 				
 				<label class="mos-cat-visibility-option"><input type="radio" name="mos_product_cat_visibility" id="mos_protected_visibility_pass" value="pass_protected" <?php checked($mos_product_cat_visibility, 'pass_protected', true) ?>> Protected by Password </label>	
 				
-				<label class="mos-cat-visibility-option"><input type="radio" name="mos_product_cat_visibility" id="mos_protected_visibility_user_roles" value="user_role_protected" <?php checked($mos_product_cat_visibility, 'user_role_protected', true) ?>> Password Protected by User roles</label>	
+				<label class="mos-cat-visibility-option"><input type="radio" name="mos_product_cat_visibility" id="mos_protected_visibility_user_roles" value="user_role_protected" <?php checked($mos_product_cat_visibility, 'user_role_protected', true) ?>>Protected by User roles</label>	
 
-				<label class="mos-cat-visibility-option"><input type="radio" name="mos_product_cat_visibility" id="mos_protected_visibility_users" value="user_protected" <?php checked($mos_product_cat_visibility, 'user_protected', true) ?>> Password Protected by User</label>
+				<label class="mos-cat-visibility-option"><input type="radio" name="mos_product_cat_visibility" id="mos_protected_visibility_users" value="user_protected" <?php checked($mos_product_cat_visibility, 'user_protected', true) ?>>Protected by User</label>
 				<div class="mos-cat-protection-type mos-cat-protection-type-password">
 					<input class="mos-cat-password-field mos_product_cat_password" name="mos_product_cat_password" id="mos_product_cat_password" type="text" placeholder="Enter password…" value="<?php echo esc_html($mos_product_cat_password) ?>">
 				</div>				
@@ -218,8 +218,7 @@ add_action( 'manage_product_cat_custom_column', 'wh_customFieldsListDisplay' , 1
  * @return array
  */
 function wh_customFieldsListTitle( $columns ) {
-    $columns['pro_meta_title'] = __( 'Meta Title', 'woocommerce' );
-    $columns['pro_meta_desc'] = __( 'Meta Description', 'woocommerce' );
+    $columns['visibility'] = __( 'Visibility', 'woocommerce' );
     return $columns;
 }
 /**
@@ -232,11 +231,14 @@ function wh_customFieldsListTitle( $columns ) {
  * @return string
  */
 function wh_customFieldsListDisplay( $columns, $column, $id ) {
-    if ( 'pro_meta_title' == $column ) {
-        $columns = esc_html( get_term_meta($id, 'wh_meta_title', true) );
-    }
-    elseif ( 'pro_meta_desc' == $column ) {
-        $columns = esc_html( get_term_meta($id, 'wh_meta_desc', true) );
+    if ( 'visibility' == $column ) {
+		$visibility = get_term_meta($id, 'mos_product_cat_visibility', true)?esc_html( get_term_meta($id, 'mos_product_cat_visibility', true) ):esc_html('public');
+		if($visibility == 'private') $columns = 'Private';
+		elseif($visibility == 'pass_protected') $columns = 'Password Protected';
+		elseif($visibility == 'user_role_protected') $columns = 'User roles Protected';
+		elseif($visibility == 'user_protected') $columns = 'User Protected';
+		else $columns = 'Public';
+        
     }
     return $columns;
 }
@@ -258,52 +260,55 @@ add_action('wp_head', 'mos_restricted_categories_for_woocommerce_product_protect
 // var_dump(mos_restricted_categories_for_woocommerce_product_protection('75'));
 function mos_restricted_categories_for_woocommerce_product_protection($id = 0){
 	$output = [];
-	$alldata = [];
-	$temp = [];
-	if(!$id) $id = get_the_ID();
-	global $product;
+	if(is_single()){
+		$alldata = [];
+		$temp = [];
+		if(!$id) $id = get_the_ID();
+		global $product;
 
-	// $id = $product->get_id();
-	// $product = wc_get_product( $id );
-	$terms = get_the_terms( $id, 'product_cat' );
-	foreach($terms as $term) {
-		$alldata[] = mos_restricted_categories_for_woocommerce_category_protection($term->term_id);
-	}
-	if (sizeof($alldata)) {
-		foreach($alldata as $data) {
-			foreach($data as $key => $value) {
-				if(is_array($value)) {
-					foreach($value as $index => $val) {
-						// var_dump($val);
-						if($val) $temp[$key][$index] = $val;
+		// $id = $product->get_id();
+		// $product = wc_get_product( $id );
+		$terms = get_the_terms( $id, 'product_cat' );
+		foreach($terms as $term) {
+			$alldata[] = mos_restricted_categories_for_woocommerce_category_protection($term->term_id);
+		}
+		if (sizeof($alldata)) {
+			foreach($alldata as $data) {
+				foreach($data as $key => $value) {
+					if(is_array($value)) {
+						foreach($value as $index => $val) {
+							// var_dump($val);
+							if($val) $temp[$key][$index] = $val;
+						}
+					} else {
+						if($value)
+						$temp[$key][] = $value;
 					}
-				} else {
-					if($value)
-					$temp[$key][] = $value;
 				}
 			}
+			$visibility = array_unique($temp['visibility']);
+			$password = array_unique($temp['password']);
+			$users = array_unique($temp['users']);
+			$user_roles = array_unique($temp['user_roles']);
 		}
-		$visibility = array_unique($temp['visibility']);
-		$password = array_unique($temp['password']);
-		$users = array_unique($temp['users']);
-		$user_roles = array_unique($temp['user_roles']);
-	}
-	// echo '<pre>';
-	/*var_dump($visibility);
-	var_dump($password);
-	var_dump($users);
-	var_dump($user_roles);
-	$a=array(
-		"pass_protected",
-		"pass_protected",
-		"user_role_protected"
-	);*/
-	$output = [
-		'visibility'	=> $visibility,
-		'password'		=> $password,
-		'users'			=> $users,
-		'user_roles'	=> $user_roles
-	];
+		// echo '<pre>';
+		/*var_dump($visibility);
+		var_dump($password);
+		var_dump($users);
+		var_dump($user_roles);
+		$a=array(
+			"pass_protected",
+			"pass_protected",
+			"user_role_protected"
+		);*/
+		
+		$output = [
+			'visibility'	=> $visibility,
+			'password'		=> $password,
+			'users'			=> $users,
+			'user_roles'	=> $user_roles
+		];
+	} 
 	// var_dump($output);
 	// echo '</pre>';
 }
