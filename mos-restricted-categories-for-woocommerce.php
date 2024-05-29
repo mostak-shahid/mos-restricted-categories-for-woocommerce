@@ -312,3 +312,44 @@ function mos_restricted_categories_for_woocommerce_product_protection($id = 0){
 	// var_dump($output);
 	// echo '</pre>';
 }
+
+add_filter('template_include', function ($template) {
+	if ( is_admin() ){
+		return;
+	}
+	if(is_product_category()) {
+		// include( plugin_dir_url( __DIR__ ). 'admin/partials/mos-restricted-categories-for-woocommerce-admin-display.php' );
+		include_once('admin/partials/mos-restricted-categories-for-woocommerce-admin-display.php');
+        exit;
+	}
+	var_dump($template);
+	var_dump(get_queried_object_id());
+	$term = get_term( get_queried_object_id() );
+	var_dump($term);
+
+	// Get template file.
+	$file = basename($template);
+  
+	// if ($file === 'my-template.php') {
+	//   // Your logic goes here.
+	//   wp_redirect(home_url());
+	//   exit;
+	// }
+  
+	return $template;
+  });
+/*
+add_filter( 'template_include', 'woocommerce_archive_template', 99 );
+
+function woocommerce_archive_template( $template ) {
+
+    if ( is_woocommerce() && is_archive() ) {
+        $new_template = plugin_dir_url( __DIR__ ).'admin/partials/mos-restricted-categories-for-woocommerce-admin-display.php';
+        // $new_template = plugins_url( 'admin/partials/mos-restricted-categories-for-woocommerce-admin-display.php', __FILE__ );
+        if ( !empty( $new_template ) ) {
+            return $new_template;
+        }
+    }
+
+    return $template;
+}*/
