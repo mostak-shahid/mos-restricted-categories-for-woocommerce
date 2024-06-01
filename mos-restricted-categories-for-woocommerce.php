@@ -96,11 +96,11 @@ function mos_restricted_categories_for_woocommerce_add_new_meta_field() {
     
 			<fieldset id="mos_product_cat_visibility" class="mos-cat-visibility">
 				<legend class="screen-reader-text">Visibility</legend>
-				<label class="mos-cat-visibility-option"><input type="radio" name="mos_product_cat_visibility" id="mos_public_visibility" value="public" checked> Public</label>
+				<label class="mos-cat-visibility-option"><input type="radio" name="mos_product_cat_visibility" id="mos_public_visibility" value="public" checked>Public</label>
 				
-				<label class="mos-cat-visibility-option"><input type="radio" name="mos_product_cat_visibility" id="mos_private_visibility" value="private"> Private</label>					
+				<label class="mos-cat-visibility-option"><input type="radio" name="mos_product_cat_visibility" id="mos_private_visibility" value="private">Private</label>					
 				
-				<label class="mos-cat-visibility-option"><input type="radio" name="mos_product_cat_visibility" id="mos_protected_visibility_pass" value="pass_protected"> Protected by Password </label>	
+				<label class="mos-cat-visibility-option"><input type="radio" name="mos_product_cat_visibility" id="mos_protected_visibility_pass" value="pass_protected">Protected by Password </label>	
 				
 				<label class="mos-cat-visibility-option"><input type="radio" name="mos_product_cat_visibility" id="mos_protected_visibility_user_roles" value="user_role_protected">Protected by User roles</label>	
 
@@ -147,11 +147,11 @@ function mos_restricted_categories_for_woocommerce_edit_meta_field($term) {
 		<td>
 			<fieldset id="mos_product_cat_visibility" class="mos-cat-visibility">
 				<legend class="screen-reader-text">Visibility</legend>
-				<label class="mos-cat-visibility-option"><input type="radio" name="mos_product_cat_visibility" id="mos_public_visibility" value="public" <?php checked($mos_product_cat_visibility, 'public', true) ?>> Public</label>
+				<label class="mos-cat-visibility-option"><input type="radio" name="mos_product_cat_visibility" id="mos_public_visibility" value="public" <?php checked($mos_product_cat_visibility, 'public', true) ?>>Public</label>
 				
-				<label class="mos-cat-visibility-option"><input type="radio" name="mos_product_cat_visibility" id="mos_private_visibility" value="private" <?php checked($mos_product_cat_visibility, 'private', true) ?>> Private</label>					
+				<label class="mos-cat-visibility-option"><input type="radio" name="mos_product_cat_visibility" id="mos_private_visibility" value="private" <?php checked($mos_product_cat_visibility, 'private', true) ?>>Private</label>					
 				
-				<label class="mos-cat-visibility-option"><input type="radio" name="mos_product_cat_visibility" id="mos_protected_visibility_pass" value="pass_protected" <?php checked($mos_product_cat_visibility, 'pass_protected', true) ?>> Protected by Password </label>	
+				<label class="mos-cat-visibility-option"><input type="radio" name="mos_product_cat_visibility" id="mos_protected_visibility_pass" value="pass_protected" <?php checked($mos_product_cat_visibility, 'pass_protected', true) ?>>Protected by Password </label>	
 				
 				<label class="mos-cat-visibility-option"><input type="radio" name="mos_product_cat_visibility" id="mos_protected_visibility_user_roles" value="user_role_protected" <?php checked($mos_product_cat_visibility, 'user_role_protected', true) ?>>Protected by User roles</label>	
 
@@ -312,14 +312,69 @@ function mos_restricted_categories_for_woocommerce_product_protection($id = 0){
 	// var_dump($output);
 	// echo '</pre>';
 }
+function testing_woo_product_query( $q ){ 
+    $args = array(
+      array(
+        'key'       => '_price',
+        'value'     => array( 10 , 30 ),
+        'compare'   => 'BETWEEN',
+        'type'      => 'numeric'  
+      ),
+    );
 
+    $q->set( 'meta_query', $args );
+
+}
+add_action( 'woocommerce_product_query', 'testing_woo_product_query' );
+add_action( 'wp', function(){
+	if ( is_user_logged_in() ) {
+	function exclude_product_from_users($q){
+	  $current_user = wp_get_current_user();
+	  $prodcuts_ids = array(73);
+	  $q->set( 'post__not_in', $prodcuts_ids );
+	}
+	add_action( 'woocommerce_product_query', 'exclude_product_from_users' );
+	function return_from_product_page(){
+	  global $post;
+	  $prodcuts_ids = array(73);
+	  if(in_array( $post->ID , $prodcuts_ids)){
+		  wp_redirect(home_url('/'));
+		  exit();
+	  }
+	}
+	add_action('wp', 'return_from_product_page');
+	} else {
+		echo 'Welcome, visitor!';
+	}
+} );
+
+// if ( !is_user_logged_in()) {
+	// function exclude_product_from_users($q){
+	//   $current_user = wp_get_current_user();
+	//   $prodcuts_ids = array(73);
+	//   $q->set( 'post__not_in', $prodcuts_ids );
+	// }
+	//add_action( 'woocommerce_product_query', 'exclude_product_from_users' );
+	// function return_from_product_page(){
+	//   global $post;
+	//   $prodcuts_ids = array(73);
+	//   if(in_array( $post->ID , $prodcuts_ids)){
+	// 	  wp_redirect(home_url('/'));
+	// 	  exit();
+	//   }
+	// }
+	// add_action('wp', 'return_from_product_page');
+// }
+  
+
+/*
 add_filter('template_include', function ($template) {
 	if ( is_admin() ){
 		return;
 	}
 	if(is_product_category()) {
 		// include( plugin_dir_url( __DIR__ ). 'admin/partials/mos-restricted-categories-for-woocommerce-admin-display.php' );
-		include_once('admin/partials/mos-restricted-categories-for-woocommerce-admin-display.php');
+		include_once('public/partials/mos-restricted-categories-for-woocommerce-public-display.php');
         exit;
 	}
 	var_dump($template);
@@ -338,18 +393,4 @@ add_filter('template_include', function ($template) {
   
 	return $template;
   });
-/*
-add_filter( 'template_include', 'woocommerce_archive_template', 99 );
-
-function woocommerce_archive_template( $template ) {
-
-    if ( is_woocommerce() && is_archive() ) {
-        $new_template = plugin_dir_url( __DIR__ ).'admin/partials/mos-restricted-categories-for-woocommerce-admin-display.php';
-        // $new_template = plugins_url( 'admin/partials/mos-restricted-categories-for-woocommerce-admin-display.php', __FILE__ );
-        if ( !empty( $new_template ) ) {
-            return $new_template;
-        }
-    }
-
-    return $template;
-}*/
+  */
