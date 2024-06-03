@@ -2,28 +2,42 @@
  * All of the CSS for your admin-specific functionality should be
  * included in this file.
  */
- .form-table {
-    td {
-      fieldset {
-        label.mos-cat-visibility-option {
-          display: block !important;
-          margin: 3px 0 !important;
-          padding: 2px 0;
-        }
-        .select2 {
-          width: 95%;
-        }
+.form-table {
+  td {
+    fieldset {
+      label.mos-cat-visibility-option {
+        display: block !important;
+        margin: 3px 0 !important;
+        padding: 2px 0;
+      }
+      .select2 {
+        width: 95%;
       }
     }
   }
-  .select2-container--default {
-    .select2-selection--multiple {
-      .select2-selection__choice__remove {
-        padding: 2px 4px;
-      }
-      .select2-selection__choice__display {
-        padding-left: 18px;
-      }
+}
+.select2-container--default {
+  .select2-selection--multiple {
+    .select2-selection__choice__remove {
+      padding: 2px 4px;
+    }
+    .select2-selection__choice__display {
+      padding-left: 18px;
     }
   }
-  
+}
+.badge {
+  display: inline-block;
+  padding: 2px 6px;
+  font-size: 12px;
+  font-weight: bold;
+  color: #fff;
+  background-color: #337ab7;
+  border-radius: 2px;
+  margin-right: 1em;
+  margin-right: 3px;
+  margin-bottom: 3px;
+  &.secondary {
+    background-color: #6c757d;
+  }
+}

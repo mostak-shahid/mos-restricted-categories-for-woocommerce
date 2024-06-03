@@ -16,4 +16,20 @@
 }
 .select2-container--default .select2-selection--multiple .select2-selection__choice__display {
   padding-left: 18px;
+}
+
+.badge {
+  display: inline-block;
+  padding: 2px 6px;
+  font-size: 12px;
+  font-weight: bold;
+  color: #fff;
+  background-color: #337ab7;
+  border-radius: 2px;
+  margin-right: 1em;
+  margin-right: 3px;
+  margin-bottom: 3px;
+}
+.badge.secondary {
+  background-color: #6c757d;
 }/*# sourceMappingURL=mos-restricted-categories-for-woocommerce-admin.css.map */

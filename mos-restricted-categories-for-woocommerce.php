@@ -100,7 +100,7 @@ function mos_restricted_categories_for_woocommerce_add_new_meta_field() {
 				
 				<label class="mos-cat-visibility-option"><input type="radio" name="mos_product_cat_visibility" id="mos_private_visibility" value="private">Private</label>					
 				
-				<label class="mos-cat-visibility-option"><input type="radio" name="mos_product_cat_visibility" id="mos_protected_visibility_pass" value="pass_protected">Protected by Password </label>	
+				<label class="mos-cat-visibility-option"><input type="radio" name="mos_product_cat_visibility" id="mos_protected_visibility_pass" value="pass_protected">Protected by Login </label>	
 				
 				<label class="mos-cat-visibility-option"><input type="radio" name="mos_product_cat_visibility" id="mos_protected_visibility_user_roles" value="user_role_protected">Protected by User roles</label>	
 
@@ -151,7 +151,7 @@ function mos_restricted_categories_for_woocommerce_edit_meta_field($term) {
 				
 				<label class="mos-cat-visibility-option"><input type="radio" name="mos_product_cat_visibility" id="mos_private_visibility" value="private" <?php checked($mos_product_cat_visibility, 'private', true) ?>>Private</label>					
 				
-				<label class="mos-cat-visibility-option"><input type="radio" name="mos_product_cat_visibility" id="mos_protected_visibility_pass" value="pass_protected" <?php checked($mos_product_cat_visibility, 'pass_protected', true) ?>>Protected by Password </label>	
+				<label class="mos-cat-visibility-option"><input type="radio" name="mos_product_cat_visibility" id="mos_protected_visibility_pass" value="pass_protected" <?php checked($mos_product_cat_visibility, 'pass_protected', true) ?>>Protected by Login</label>	
 				
 				<label class="mos-cat-visibility-option"><input type="radio" name="mos_product_cat_visibility" id="mos_protected_visibility_user_roles" value="user_role_protected" <?php checked($mos_product_cat_visibility, 'user_role_protected', true) ?>>Protected by User roles</label>	
 
@@ -189,19 +189,19 @@ function wh_save_taxonomy_custom_meta($term_id) {
 	}     
 	update_term_meta($term_id,'mos_product_cat_visibility',sanitize_text_field($_POST['mos_product_cat_visibility']));
 
-	if (isset($_POST['mos_product_cat_password'])) {
+	if (isset($_POST['mos_product_cat_password']) && sanitize_text_field($_POST['mos_product_cat_visibility']) == 'pass_protected') {
 		update_term_meta($term_id,'mos_product_cat_password',$_POST['mos_product_cat_password']);
 	} else {
 		update_term_meta($term_id,'mos_product_cat_password','');
 	}	
 
-	if (isset($_POST['mos_product_cat_users'])) {
+	if (isset($_POST['mos_product_cat_users']) && sanitize_text_field($_POST['mos_product_cat_visibility']) == 'user_protected') {
 		update_term_meta($term_id,'mos_product_cat_users',$_POST['mos_product_cat_users']);
 	} else {
 		update_term_meta($term_id,'mos_product_cat_users','');
 	}
 
-	if (isset($_POST['mos_product_cat_user_roles'])) {
+	if (isset($_POST['mos_product_cat_user_roles']) && sanitize_text_field($_POST['mos_product_cat_visibility']) == 'user_role_protected') {
 		update_term_meta($term_id,'mos_product_cat_user_roles',$_POST['mos_product_cat_user_roles']);
 	} else {
 		update_term_meta($term_id,'mos_product_cat_user_roles','');
@@ -232,12 +232,37 @@ function wh_customFieldsListTitle( $columns ) {
  */
 function wh_customFieldsListDisplay( $columns, $column, $id ) {
     if ( 'visibility' == $column ) {
-		$visibility = get_term_meta($id, 'mos_product_cat_visibility', true)?esc_html( get_term_meta($id, 'mos_product_cat_visibility', true) ):esc_html('public');
-		if($visibility == 'private') $columns = 'Private';
-		elseif($visibility == 'pass_protected') $columns = 'Password Protected';
-		elseif($visibility == 'user_role_protected') $columns = 'User roles Protected';
-		elseif($visibility == 'user_protected') $columns = 'User Protected';
-		else $columns = 'Public';
+
+		$mos_product_cat_visibility = get_term_meta( $id, 'mos_product_cat_visibility', true )?get_term_meta( $id, 'mos_product_cat_visibility', true ):"public";
+		$mos_product_cat_password = get_term_meta( $id, 'mos_product_cat_password', true )?get_term_meta( $id, 'mos_product_cat_password', true ):"";
+		$mos_product_cat_users = get_term_meta( $id, 'mos_product_cat_users', true )?get_term_meta( $id, 'mos_product_cat_users', true ):[];
+		$mos_product_cat_user_roles = get_term_meta( $id, 'mos_product_cat_user_roles', true )?get_term_meta( $id, 'mos_product_cat_user_roles', true ):[];
+		if($mos_product_cat_visibility == 'private') {
+			$columns = 'Private';
+		}
+		elseif($mos_product_cat_visibility == 'pass_protected') {
+			$columns = '<p>'.'Password Protected'.'</p>';
+			$columns .= '<span class="badge secondary">'.$mos_product_cat_password.'</span>';
+		}
+		elseif($mos_product_cat_visibility == 'user_role_protected') {
+			$columns = '<p>'.'User roles Protected'.'</p>';
+			if ($mos_product_cat_user_roles) {
+				foreach($mos_product_cat_user_roles as $role) {
+					$columns .= '<span class="badge secondary">'.$role.'</span>';
+				}
+			}
+		}
+		elseif($mos_product_cat_visibility == 'user_protected') {
+			$columns = '<p>'.'User Protected'.'</p>';
+			if ($mos_product_cat_users) {
+				foreach($mos_product_cat_users as $user_id) {
+					$user = get_user_by( 'ID', $user_id );
+
+					$columns .= '<span class="badge secondary">'.$user->display_name.'('.$user_id.')'.'</span>';
+				}
+			}
+		}
+		else $columns = '<p>'.'Public'.'</p>';
         
     }
     return $columns;
@@ -394,3 +419,4 @@ add_filter('template_include', function ($template) {
 	return $template;
   });
   */
+//SELECT * FROM `wp_termmeta` WHERE (`meta_key` = 'mos_product_cat_users' AND `meta_value` LIKE '%\"1\"%') OR (`meta_key` = 'mos_product_cat_user_roles' AND `meta_value` LIKE '%\"administrator\"%');
