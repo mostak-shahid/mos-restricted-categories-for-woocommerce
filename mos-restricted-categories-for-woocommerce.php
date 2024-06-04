@@ -373,6 +373,34 @@ add_action( 'wp', function(){
 	}
 } );
 
+// require_once(ABSPATH . 'wp-includes/wp-blog-header.php');
+
+add_action( 'plugins_loaded', 'my_plugin_override' );
+
+function my_plugin_override() {    
+	$user = get_user_by('id', 1);
+	echo $user->roles[0];
+	$users = get_users( array( 'role__in' => array( 'author', 'subscriber' ) ) );
+}
+
+// add_action("wp_head", 'get_user_accessibility_to_categories');
+/*function get_user_accessibility_to_categories($user_id = 0){
+	if ($user_id) {
+		$user = get_user_by('id', $user_id);
+		return $user;
+		global $wpdb;
+        // $meta_key_exist = $wpdb->get_var(
+        //     $wpdb->prepare(
+        //         "SELECT COUNT(*) FROM {$wpdb->prefix}options WHERE option_name=%s;",
+        //         array(
+        //             $args['meta_key']
+        //         )
+        //     ),
+        // );
+		//SELECT term_id FROM wp_termmeta WHERE (meta_key = 'mos_product_cat_users' AND meta_value LIKE '%\"1\"%') OR (meta_key = 'mos_product_cat_user_roles' AND meta_value LIKE '%\"administrator\"%');
+	}
+}*/
+
 // if ( !is_user_logged_in()) {
 	// function exclude_product_from_users($q){
 	//   $current_user = wp_get_current_user();
@@ -419,4 +447,3 @@ add_filter('template_include', function ($template) {
 	return $template;
   });
   */
-//SELECT * FROM `wp_termmeta` WHERE (`meta_key` = 'mos_product_cat_users' AND `meta_value` LIKE '%\"1\"%') OR (`meta_key` = 'mos_product_cat_user_roles' AND `meta_value` LIKE '%\"administrator\"%');
