@@ -99,5 +99,52 @@ class Mos_Restricted_Categories_For_Woocommerce_Public {
 		wp_enqueue_script( $this->plugin_name, plugin_dir_url( __FILE__ ) . 'js/mos-restricted-categories-for-woocommerce-public.js', array( 'jquery' ), $this->version, false );
 
 	}
+	public function mos_restricted_categories_for_woocommerce_woo_product_query( $q ){ 
+		global $wpdb;
+		//SELECT term_id FROM wp_term_taxonomy WHERE taxonomy = 'product_cat'
+		$all_cats_raw = $wpdb->get_results($wpdb->prepare("SELECT term_id FROM {$wpdb->prefix}term_taxonomy WHERE taxonomy = %s;", ['product_cat']),ARRAY_A);
+		$all_cats = array_column($all_cats_raw, 'term_id');	
+
+
+		//SELECT term_id FROM {$wpdb->prefix}termmeta WHERE meta_key = 'mos_product_cat_visibility' AND meta_value != 'public'
+		$restricted_cats_raw = $wpdb->get_results($wpdb->prepare("SELECT term_id FROM {$wpdb->prefix}termmeta WHERE meta_key = %s AND meta_value != %s;", ['mos_product_cat_visibility', 'public']),ARRAY_A);
+
+		$restricted_cats = array_column($restricted_cats_raw, 'term_id');
+
+		$allowed_cats = array_diff($all_cats,$restricted_cats);
+
+		// echo '<pre>';
+		// var_dump($all_cats);
+		// var_dump($restricted_cats);
+		// var_dump($result);
+		// echo '</pre>';
+
+		// $wpdb->get_results(
+        //     $wpdb->prepare(
+        //         "SELECT term_id FROM {$wpdb->prefix}termmeta WHERE meta_key = 'mos_product_cat_visibility' AND meta_value != 'public';",
+        //         array(
+        //             $args['meta_key']
+        //         )
+        //     ),
+        // );
+		$args = array(
+		//   array(
+		// 	'key'       => '_price',
+		// 	'value'     => array( 10 , 20 ),
+		// 	'compare'   => 'BETWEEN',
+		// 	'type'      => 'numeric'  
+		//   ),
+		  array(
+			'taxonomy' => 'product_cat',
+			'field' => 'id',
+			'terms' => $allowed_cats,
+			//'compare' => '!=', //'=', '!=', '>', '>=', '<', '<=', 'LIKE', 'NOT LIKE', 'IN', 'NOT IN', 'BETWEEN', 'NOT BETWEEN', 'NOT EXISTS', 'REGEXP', 'NOT REGEXP' or 'RLIKE'. Default value is '='.
+		  ),
+		);	
+
+		//$q->set( 'meta_query', $args );	
+		$q->set( 'tax_query', $args );	
+	}
+	
 
 }

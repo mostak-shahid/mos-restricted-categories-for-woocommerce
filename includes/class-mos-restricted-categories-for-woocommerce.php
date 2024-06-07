@@ -99,6 +99,8 @@ class Mos_Restricted_Categories_For_Woocommerce {
 	 */
 	private function load_dependencies() {
 
+		require_once(ABSPATH . 'wp-admin/includes/plugin.php');
+
 		/**
 		 * The class responsible for orchestrating the actions and filters of the
 		 * core plugin.
@@ -154,8 +156,30 @@ class Mos_Restricted_Categories_For_Woocommerce {
 
 		$plugin_admin = new Mos_Restricted_Categories_For_Woocommerce_Admin( $this->get_plugin_name(), $this->get_version() );
 
-		$this->loader->add_action( 'admin_enqueue_scripts', $plugin_admin, 'enqueue_styles' );
-		$this->loader->add_action( 'admin_enqueue_scripts', $plugin_admin, 'enqueue_scripts' );
+		if (!is_plugin_active('woocommerce/woocommerce.php')) {
+			$this->loader->add_action('admin_notices', $plugin_admin, 'mos_restricted_categories_for_woocommerce_woo_check');
+			add_action("wp_ajax_mos_restricted_categories_for_woocommerce_ajax_install_plugin", "wp_ajax_install_plugin");
+		} else {
+			$this->loader->add_action( 'admin_enqueue_scripts', $plugin_admin, 'enqueue_styles' );
+			$this->loader->add_action( 'admin_enqueue_scripts', $plugin_admin, 'enqueue_scripts' );
+
+			// add_action('product_cat_add_form_fields', 'mos_restricted_categories_for_woocommerce_add_new_meta_field', 10, 1);
+			// add_action('product_cat_edit_form_fields', 'mos_restricted_categories_for_woocommerce_edit_meta_field', 10, 1);			
+			$this->loader->add_action( 'product_cat_add_form_fields', $plugin_admin, 'mos_restricted_categories_for_woocommerce_add_new_meta_field', 10, 1 );
+			$this->loader->add_action( 'product_cat_edit_form_fields', $plugin_admin, 'mos_restricted_categories_for_woocommerce_edit_meta_field', 10, 1 );
+
+			
+			// add_action('edited_product_cat', 'mos_restricted_categories_for_woocommerce_save_meta_field', 10, 1);
+			// add_action('create_product_cat', 'mos_restricted_categories_for_woocommerce_save_meta_field', 10, 1);
+			$this->loader->add_action( 'edited_product_cat', $plugin_admin, 'mos_restricted_categories_for_woocommerce_save_meta_field', 10, 1 );
+			$this->loader->add_action( 'create_product_cat', $plugin_admin, 'mos_restricted_categories_for_woocommerce_save_meta_field', 10, 1 );
+
+			// Displaying Additional Columns
+			// add_filter( 'manage_edit-product_cat_columns', 'mos_restricted_categories_for_woocommerce_cat_list_title' );
+			// add_action( 'manage_product_cat_custom_column', 'mos_restricted_categories_for_woocommerce_cat_list_display' , 10, 3);			
+			$this->loader->add_action( 'manage_edit-product_cat_columns', $plugin_admin, 'mos_restricted_categories_for_woocommerce_cat_list_title');
+			$this->loader->add_action( 'manage_product_cat_custom_column', $plugin_admin, 'mos_restricted_categories_for_woocommerce_cat_list_display', 10, 3);
+		}
 
 	}
 
@@ -172,6 +196,10 @@ class Mos_Restricted_Categories_For_Woocommerce {
 
 		$this->loader->add_action( 'wp_enqueue_scripts', $plugin_public, 'enqueue_styles' );
 		$this->loader->add_action( 'wp_enqueue_scripts', $plugin_public, 'enqueue_scripts' );
+		if (is_plugin_active('woocommerce/woocommerce.php')) {
+			//add_action( 'woocommerce_product_query', 'mos_restricted_categories_for_woocommerce_woo_product_query' );
+			$this->loader->add_action( 'woocommerce_product_query', $plugin_public, 'mos_restricted_categories_for_woocommerce_woo_product_query' );
+		}
 
 	}
 
