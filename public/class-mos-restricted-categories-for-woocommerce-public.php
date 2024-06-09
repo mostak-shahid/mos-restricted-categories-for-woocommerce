@@ -145,6 +145,20 @@ class Mos_Restricted_Categories_For_Woocommerce_Public {
 		//$q->set( 'meta_query', $args );	
 		$q->set( 'tax_query', $args );	
 	}
-	
+
+	public function filter_is_purchasable($is_purchasable, $product ) {
+		//global $product;
+		$_product = wc_get_product( $product->get_id() );
+		$category_ids = $_product->get_category_ids();//23
+		//check product categories is inside restriction or not
+			$user = wp_get_current_user();
+			//check user has access to any of these restricted category
+		// if( $product->get_id() == 57)  {
+		// if( $user->roles[0] == 'administrator')  {
+		if( in_array(24, $category_ids))  {
+			return false;
+		}
+		return $is_purchasable;
+	}
 
 }

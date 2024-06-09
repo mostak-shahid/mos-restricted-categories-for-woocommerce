@@ -199,6 +199,11 @@ class Mos_Restricted_Categories_For_Woocommerce {
 		if (is_plugin_active('woocommerce/woocommerce.php')) {
 			//add_action( 'woocommerce_product_query', 'mos_restricted_categories_for_woocommerce_woo_product_query' );
 			$this->loader->add_action( 'woocommerce_product_query', $plugin_public, 'mos_restricted_categories_for_woocommerce_woo_product_query' );
+			//
+			// add_filter( 'woocommerce_is_purchasable', 'wpcustom_is_purchasable', 10, 2 );
+			// $this->loader->add_filter( 'woocommerce_is_purchasable', $plugin_public, 'wpcustom_is_purchasable', 10, 2 );
+			/* REMOVE ADD TO CART BUTTON ON SPECIFIC PRODUCT IDs*/
+			$this->loader->add_filter( 'woocommerce_is_purchasable', $plugin_public, 'filter_is_purchasable', 10, 2);
 		}
 
 	}
