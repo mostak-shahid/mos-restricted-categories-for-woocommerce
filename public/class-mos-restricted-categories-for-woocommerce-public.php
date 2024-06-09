@@ -161,5 +161,6 @@ class Mos_Restricted_Categories_For_Woocommerce_Public {
 		return $is_purchasable;
 	}
 	//https://www.cloudways.com/blog/how-to-remove-hide-or-disable-add-to-cart-button-in-woocommerce/
+	//https://github.com/wolffe/wp-primary-category/tree/master
 
 }
