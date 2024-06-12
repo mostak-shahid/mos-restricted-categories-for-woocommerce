@@ -85,3 +85,9 @@ mos_restricted_categories_for_woocommerce_run();
 //mos_restricted_categories_for_woocommerce_cat_list_display
 
 
+add_action('edit_form_after_editor', function(){
+	global $typenow;
+	//if($typenow == 'product') {
+		echo 'Hello';
+	//}
+});
